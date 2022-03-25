@@ -1,6 +1,7 @@
 package com.generation.blogpessoal.model;
 
-import java.time.LocalDate;
+
+import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -17,34 +18,30 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Entity
 @Table(name = "tb_postagens")
 public class Postagem {
-	//4- @Id indica a chave primaria
-	//4- @GenetedValue = auto increment
-	//1-coloque o private com os atributos
-	
+	// 4- @Id indica a chave primaria
+	// 4- @GenetedValue = auto increment
+	// 1-coloque o private com os atributos
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	// @NotNull = NOTNULL
 	// @NotBlank = NOT NULL (mensagem para o usuario)
 	// @Size = definir os parametros de tamanho
 	@NotBlank(message = "O atributo título é Obrigatório!")
 	@Size(min = 5, max = 100, message = "O atributo titulo deve possuir no min 5 e no max 100 caracteres")
 	private String titulo;
-	
-	
+
 	@NotNull(message = "O atributo texto é Obrigatório!")
 	@Size(min = 10, max = 1000, message = "O atributo texto deve possuir no min 10 e no max 1000 caracteres")
 	private String texto;
-	
-	//@UpdateTimestamp = atualizar/criar a data e hora da postagem automaticamente
-	@UpdateTimestamp
-	private LocalDate data;
 
-	
-	
-	
-	//2-criando get/set
+	// @UpdateTimestamp = atualizar/criar a data e hora da postagem automaticamente
+	@UpdateTimestamp
+	private LocalDateTime data;
+
+	// 2-criando get/set
 	public Long getId() {
 		return id;
 	}
@@ -69,15 +66,12 @@ public class Postagem {
 		this.texto = texto;
 	}
 
-	public LocalDate getData() {
+	public LocalDateTime getData() {
 		return data;
 	}
 
-	public void setData(LocalDate data) {
+	public void setData(LocalDateTime data) {
 		this.data = data;
 	}
-	
-	
-	
-	
+
 }
