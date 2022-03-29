@@ -19,87 +19,76 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.generation.blogpessoal.model.Postagem;
 import com.generation.blogpessoal.repository.PostagemRepository;
+import com.generation.blogpessoal.repository.TemaRepository;
 
 @RestController
 @RequestMapping("/postagens")
-//tudo que vier, aceite. liberando tudo para conectar
-@CrossOrigin(origins = "*", allowedHeaders = "*")
+@CrossOrigin(origins = "", allowedHeaders = "")
 public class PostagemController {
 
-	// transferindo a responsabilidade de criar e estanciar para o spring
-	// ele que vai criar o objeto agora
 	@Autowired
 	private PostagemRepository postagemRepository;
 
-	// criando metodos como o SELECT * FROM
+	@Autowired
+	private TemaRepository temaRepository;
 
-	// consultar, ver use GET
-	// ResponseEntity devolve um status como o 200 tudo ok
-	// <List<Postagem>> trazer a lista de Postagem (tabela)
-	// getAll() nome qualquer para isso
 	@GetMapping
 	public ResponseEntity<List<Postagem>> getAll() {
-		// SELECT * FROM tb_postagens
-		// postagemRepository é o que transferimos a responsalidade
+
 		return ResponseEntity.ok(postagemRepository.findAll());
+
+		// SELECT * FROM tb_postagens;
 	}
 
-	// buscando por id da postagem
-	// id entre {} entende o valor do id
-	// tirar a lista
-	// O get pode ser qualquer nome;
-	// Criar variavél Long id (chave primaria)
-	// @pathVariable para fazer conexão do Long id e do /{id}
-	// Optional (.map) para não aparecer id/objetos nulos
-	// executar findbyid
-	// coloque o resultado de findbyid em resposta, se for .ok mostre resposta
-	// orElse notFund
 	@GetMapping("/{id}")
 	public ResponseEntity<Postagem> getById(@PathVariable Long id) {
-		// find by id WHERE ID = 4
+
 		return postagemRepository.findById(id).map(resposta -> ResponseEntity.ok(resposta))
 				.orElse(ResponseEntity.notFound().build());
+
+		/*
+		 * Optional <Postagem> resposta = postagemRepository.findById(id);
+		 * 
+		 * if (resposta.isPresent()) return ResponseEntity.ok(resposta); else return
+		 * ResponseEntity.notFound().build();
+		 */
+
+		// SELECT * FROM tb_postagens WHERE id = 1;
 	}
 
-	// buscando por titulo da postagem
-	// <list> pois pode ter mais de uma postagem
-	// criar uma variavel String titulo
-	// criar metodo de busca no repository
 	@GetMapping("/titulo/{titulo}")
 	public ResponseEntity<List<Postagem>> getByTitulo(@PathVariable String titulo) {
+
 		return ResponseEntity.ok(postagemRepository.findAllByTituloContainingIgnoreCase(titulo));
 	}
 
-	// Cadastrar/gravar/criar registros no db
-	// gravar um objeto inteiro com todos os atributos
-	// Postagem = classe, postagem = objeto
-	// @RequestBody pegar no corpo da requisição
-	// status(HttpStatus.CREATED)devolve o status 201 de created
-	// .save gravar na tabela do mysql
-	// @Valid mostra o erro
 	@PostMapping
 	public ResponseEntity<Postagem> postPostagem(@Valid @RequestBody Postagem postagem) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(postagemRepository.save(postagem));
+		if (temaRepository.existsById(postagem.getTema().getId()))
+			return ResponseEntity.status(HttpStatus.CREATED).body(postagemRepository.save(postagem));
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 	}
 
-	// Atualização
-	// A mesma forma do Post só trocar por Put e o status
-	
 	@PutMapping
-    public ResponseEntity<Postagem> putPostagem(@Valid @RequestBody Postagem postagem) {
+	public ResponseEntity<Postagem> putPostagem(@Valid @RequestBody Postagem postagem) {
 
-        return postagemRepository.findById(postagem.getId())
-                .map(resposta -> ResponseEntity.status(HttpStatus.OK).body(postagemRepository.save(postagem)))
-                .orElse(ResponseEntity.notFound().build());
-    }
-	// Apagar
-	// void não retorna status
+		if (postagemRepository.existsById(postagem.getId())) {
+
+			if (temaRepository.existsById(postagem.getTema().getId()))
+				return ResponseEntity.status(HttpStatus.OK).body(postagemRepository.save(postagem));
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		}
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+	}
+
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Object> deletePostagem(@PathVariable long id) {
+	public ResponseEntity<?> deletePostagem(@PathVariable Long id) {
+
 		return postagemRepository.findById(id).map(resposta -> {
 			postagemRepository.deleteById(id);
 			return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 		}).orElse(ResponseEntity.notFound().build());
-	}
 
+	}
 }
