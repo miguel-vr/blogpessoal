@@ -22,6 +22,8 @@ public class UsuarioLogin {
 		this.foto = foto;
 		this.token = token;
 	}
+	
+	public UsuarioLogin() {   }
 
 	public Long getId() {
 		return id;
